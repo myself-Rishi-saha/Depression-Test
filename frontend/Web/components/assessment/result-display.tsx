@@ -9,24 +9,72 @@ import {
   RefreshCw,
   Heart,
   ExternalLink,
+  User,
+  Calendar,
+  CheckCircle2,
+  Lightbulb,
+  FileText,
 } from "lucide-react"
 
-interface ResultDisplayProps {
+export interface AssessmentResult {
   prediction: number
   confidence: number
+  evaluation: string
+  recommendations: string[]
+  userName: string
+  submittedAt: Date
+}
+
+interface ResultDisplayProps {
+  result: AssessmentResult
   onReset: () => void
 }
 
-export function ResultDisplay({
-  prediction,
-  confidence,
-  onReset,
-}: ResultDisplayProps) {
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
+export function ResultDisplay({ result, onReset }: ResultDisplayProps) {
+  const { prediction, confidence, evaluation, recommendations, userName, submittedAt } = result
   const isHighRisk = prediction === 1
   const confidencePercentage = (confidence * 100).toFixed(1)
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* User Info Card */}
+      <Card className="p-6 bg-secondary/50">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <User className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Assessed For</p>
+              <p className="font-semibold text-foreground text-lg">{userName}</p>
+            </div>
+          </div>
+          <div className="hidden sm:block h-12 w-px bg-border" />
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Calendar className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Submitted On</p>
+              <p className="font-medium text-foreground text-sm">
+                {formatDate(submittedAt)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       {/* Main Result Card */}
       <Card
         className={`p-8 text-center border-2 ${
@@ -55,8 +103,8 @@ export function ResultDisplay({
 
         <p className="text-muted-foreground mb-6 max-w-md mx-auto">
           {isHighRisk
-            ? "Based on your responses, some indicators suggest you may benefit from speaking with a mental health professional."
-            : "Based on your responses, your current indicators are within normal ranges. Continue maintaining healthy habits."}
+            ? `${userName}, based on your responses, some indicators suggest you may benefit from speaking with a mental health professional.`
+            : `${userName}, based on your responses, your current indicators are within normal ranges. Continue maintaining healthy habits.`}
         </p>
 
         {/* Confidence Score */}
@@ -67,6 +115,53 @@ export function ResultDisplay({
           <span className="text-sm font-semibold text-foreground">
             {confidencePercentage}%
           </span>
+        </div>
+      </Card>
+
+      {/* Evaluation Card */}
+      <Card className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground mb-3 text-lg">
+              Evaluation Summary
+            </h3>
+            <p className="text-muted-foreground leading-relaxed">
+              {evaluation}
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Recommendations Card */}
+      <Card className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center">
+              <Lightbulb className="h-5 w-5 text-accent" />
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground mb-4 text-lg">
+              Recommendations
+            </h3>
+            <ul className="space-y-3">
+              {recommendations.map((rec, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="text-muted-foreground leading-relaxed">
+                    {rec}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </Card>
 

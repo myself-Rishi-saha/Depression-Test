@@ -6,20 +6,10 @@ import { Card } from "@/components/ui/card"
 import { formSections, getDefaultFormData } from "@/lib/assessment-data"
 import { AssessmentFormSection } from "./form-section"
 import { ProgressIndicator } from "./progress-indicator"
-import { ResultDisplay } from "./result-display"
-import {
-  ChevronLeft,
-  ChevronRight,
-  Send,
-  Loader2,
-  AlertCircle,
-} from "lucide-react"
+import { ResultDisplay, type AssessmentResult } from "./result-display"
+import { SubmissionPopup } from "./submission-popup"
+import { ChevronLeft, ChevronRight, Send, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
-interface PredictionResult {
-  prediction: number
-  confidence: number
-}
 
 export function AssessmentForm() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -28,7 +18,9 @@ export function AssessmentForm() {
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<PredictionResult | null>(null)
+  const [result, setResult] = useState<AssessmentResult | null>(null)
+  const [showPopup, setShowPopup] = useState(false)
+  const [submissionDate, setSubmissionDate] = useState<Date>(new Date())
 
   const handleChange = useCallback((key: string, value: number) => {
     setFormData((prev) => ({ ...prev, [key]: value }))
@@ -48,9 +40,25 @@ export function AssessmentForm() {
     }
   }
 
-  const handleSubmit = async () => {
+  const handleShowPopup = () => {
+    setSubmissionDate(new Date())
+    setShowPopup(true)
+  }
+
+  const handlePopupCancel = () => {
+    setShowPopup(false)
+  }
+
+  const handleSubmit = async (userName: string, isAnonymous: boolean) => {
     setIsSubmitting(true)
     setError(null)
+
+    // Build the request body according to the new format
+    const requestBody = {
+      name: isAnonymous ? "User" : userName,
+      submitted_at: submissionDate.toISOString(),
+      responses: formData,
+    }
 
     try {
       const response = await fetch("/api/predict", {
@@ -58,7 +66,7 @@ export function AssessmentForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
@@ -66,9 +74,19 @@ export function AssessmentForm() {
       }
 
       const data = await response.json()
-      setResult(data)
+      setResult({
+        prediction: data.prediction,
+        confidence: data.confidence,
+        evaluation: data.evaluation || getDefaultEvaluation(data.prediction),
+        recommendations:
+          data.recommendations || getDefaultRecommendations(data.prediction),
+        userName: isAnonymous ? "User" : userName,
+        submittedAt: submissionDate,
+      })
+      setShowPopup(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
+      setShowPopup(false)
     } finally {
       setIsSubmitting(false)
     }
@@ -79,6 +97,7 @@ export function AssessmentForm() {
     setFormData(getDefaultFormData())
     setResult(null)
     setError(null)
+    setSubmissionDate(new Date())
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
@@ -86,13 +105,7 @@ export function AssessmentForm() {
   const currentSection = formSections[currentStep]
 
   if (result) {
-    return (
-      <ResultDisplay
-        prediction={result.prediction}
-        confidence={result.confidence}
-        onReset={handleReset}
-      />
-    )
+    return <ResultDisplay result={result} onReset={handleReset} />
   }
 
   return (
@@ -136,26 +149,49 @@ export function AssessmentForm() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Analyzing...</span>
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4" />
-                  <span>Submit Assessment</span>
-                </>
-              )}
+            <Button onClick={handleShowPopup} className="gap-2">
+              <Send className="h-4 w-4" />
+              <span>Submit Assessment</span>
             </Button>
           )}
         </div>
       </div>
+
+      <SubmissionPopup
+        open={showPopup}
+        submissionDate={submissionDate}
+        isSubmitting={isSubmitting}
+        onSubmit={handleSubmit}
+        onCancel={handlePopupCancel}
+      />
     </div>
   )
+}
+
+// Default evaluation messages if not provided by API
+function getDefaultEvaluation(prediction: number): string {
+  if (prediction === 1) {
+    return "Based on your responses, several indicators suggest that you may be experiencing symptoms associated with depression. This is not a diagnosis, but rather an indication that speaking with a mental health professional could be beneficial."
+  }
+  return "Based on your responses, your current indicators appear to be within normal ranges. While this is encouraging, remember that mental health is dynamic. Continue monitoring your wellbeing and don't hesitate to seek support if needed."
+}
+
+// Default recommendations if not provided by API
+function getDefaultRecommendations(prediction: number): string[] {
+  if (prediction === 1) {
+    return [
+      "Consider scheduling an appointment with a mental health professional for a proper evaluation",
+      "Reach out to trusted friends or family members about how you're feeling",
+      "Practice self-care activities such as regular exercise, adequate sleep, and healthy eating",
+      "Avoid isolating yourself - try to maintain social connections even when it feels difficult",
+      "If you're having thoughts of self-harm, please contact a crisis helpline immediately",
+    ]
+  }
+  return [
+    "Continue maintaining healthy sleep habits (7-9 hours per night)",
+    "Stay physically active - aim for at least 30 minutes of moderate activity most days",
+    "Nurture your social connections and relationships",
+    "Practice stress management techniques such as mindfulness or deep breathing",
+    "Check in with yourself regularly and be aware of any changes in your mood or behavior",
+  ]
 }
