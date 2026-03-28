@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function AssessmentForm() {
   const [currentStep, setCurrentStep] = useState(0)
-  const [formData, setFormData] = useState<Record<string, number>>(
+  const [formData, setFormData] = useState<Record<string, number | string>>(
     getDefaultFormData()
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -22,7 +22,7 @@ export function AssessmentForm() {
   const [showPopup, setShowPopup] = useState(false)
   const [submissionDate, setSubmissionDate] = useState<Date>(new Date())
 
-  const handleChange = useCallback((key: string, value: number) => {
+  const handleChange = useCallback((key: string, value: number | string) => {
     setFormData((prev) => ({ ...prev, [key]: value }))
   }, [])
 

@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
+import { convertToBackendFormat } from "@/lib/assessment-data";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 
 interface PredictRequest {
   name: string;
   submitted_at: string;
-  responses: Record<string, number>;
+  responses: Record<string, number | string>;
 }
 
 export async function POST(request: Request) {
-  // Parse the request body first so we can use it in both try and catch
   let data: PredictRequest;
+
   try {
     data = await request.json();
   } catch {
@@ -18,31 +21,27 @@ export async function POST(request: Request) {
     );
   }
 
-  // Check if Flask API URL is configured
-  // const apiUrl = process.env.FLASK_API_URL
+  // Convert frontend responses to backend format
+  const backendResponses = convertToBackendFormat(data.responses);
+
+  const flaskRequestBody = {
+    name: data.name,
+    submitted_at: data.submitted_at,
+    ...backendResponses,
+  };
+
   const apiUrl = "http://127.0.0.1:5000/predict";
 
-  // If no Flask API URL is configured, use mock response
-  if (!apiUrl) {
-    console.warn("FLASK_API_URL not configured, using mock response");
-    return generateMockResponse(data);
-  }
-
   try {
-    // const response = await fetch(apiUrl, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //  // body: JSON.stringify(data),
-    //   body: JSON.stringify(data.responses),
-    // })
+    // -------------------------
+    // CALL FLASK MODEL
+    // -------------------------
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data.responses),
+      body: JSON.stringify(flaskRequestBody),
     });
 
     if (!response.ok) {
@@ -50,75 +49,131 @@ export async function POST(request: Request) {
     }
 
     const result = await response.json();
-    return NextResponse.json(result);
+
+    console.log("Flask prediction:", result);
+
+    // -------------------------
+    // GEMINI AI ANALYSIS
+    // -------------------------
+//     let aiOutput = {
+//       evaluation: "",
+//       recommendations: [] as string[],
+//     };
+
+//     try {
+//       const genAI = new GoogleGenerativeAI(
+//         "AIzaSyCp-fRnoiNuu6HxDc-by_wXcW4Y9untFgw",
+//       );
+
+//       // const model = genAI.getGenerativeModel({
+//       //   model: "gemini-pro",
+//       // })
+
+//       const model = genAI.getGenerativeModel({
+//         model: "gemini-1.5-pro",
+//         safetySettings: [
+//           {
+//             category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+//             threshold: HarmBlockThreshold.BLOCK_NONE,
+//           },
+//           // Add other categories as needed for your specific use case
+//         ],
+//       });
+//       const prompt = `
+// A depression assessment produced the following result.
+
+// Prediction: ${result.prediction}
+// Confidence: ${result.confidence}
+
+// User: ${data.name}
+// Date: ${data.submitted_at}
+
+// Write:
+
+// 1. A short supportive mental health evaluation paragraph
+// 2. 5 helpful recommendations
+
+// Return JSON only:
+
+// {
+//  "evaluation": "...",
+//  "recommendations": ["...", "..."]
+// }
+// `;
+
+//       const geminiRes = await model.generateContent(prompt);
+
+//       // const text = geminiRes.response.text();
+
+//       // console.log("Gemini raw output:", text);
+
+//       // try {
+//       //   aiOutput = JSON.parse(text);
+//       // } catch {
+//       //   aiOutput = {
+//       //     evaluation: text,
+//       //     recommendations: [],
+//       //   };
+//       // }
+//       let text = geminiRes.response.text();
+
+//       console.log("Gemini raw output:", text);
+
+//       // remove markdown formatting
+//       text = text
+//         .replace(/```json/g, "")
+//         .replace(/```/g, "")
+//         .trim();
+
+//       console.log("Cleaned Gemini:", text);
+
+//       try {
+//         aiOutput = JSON.parse(text);
+//       } catch {
+//         aiOutput = {
+//           evaluation: text,
+//           recommendations: [],
+//         };
+//       }
+//     } catch (geminiError) {
+//       console.log("Gemini failed:", geminiError);
+//       aiOutput = {
+//         evaluation: "AI evaluation currently unavailable.",
+//         recommendations: [],
+//       };
+//     }
+
+    const finalResponse = {
+      // prediction: result.prediction,
+      prediction: result.prediction,
+      confidence: result.confidence,
+      // evaluation: aiOutput.evaluation,
+      // recommendations: aiOutput.recommendations,
+      name: data.name,
+      submitted_at: data.submitted_at,
+    };
+
+    console.log("Final API response:", finalResponse);
+
+    return NextResponse.json(finalResponse);
   } catch (error) {
     console.error("Prediction error:", error);
-    // Fallback to mock response if Flask API fails
     return generateMockResponse(data);
   }
 }
 
 function generateMockResponse(data: PredictRequest) {
-  const responses = data.responses || {};
-
-  // Simple mock logic: count how many risk factors are present
-  const riskFactors = [
-    "Melancholic",
-    "Future_Hopelessness",
-    "Self_Perceived_Failure",
-    "Interest_Loss",
-    "Meaninglessness",
-    "Hopelessness_EndFeeling",
-    "Feeling_Insignificant",
-    "Suicidal_Thoughts",
-    "Social_Withdrawal",
-    "Anhedonia_No_Joy",
-    "Insomnia",
-    "Loneliness_Frequency",
-  ];
-
-  const riskCount = riskFactors.reduce((count, factor) => {
-    return count + (responses[factor] === 1 ? 1 : 0);
-  }, 0);
-
-  // If more than half of key risk factors are present, predict high risk
-  const prediction = riskCount > riskFactors.length / 2 ? 1 : 0;
-  const confidence =
-    0.65 +
-    Math.abs(riskCount / riskFactors.length - 0.5) * 0.35 +
-    Math.random() * 0.1;
-
-  // Generate evaluation based on prediction
-  const submittedDate = new Date(data.submitted_at).toLocaleDateString();
-  const evaluation =
-    prediction === 1
-      ? `Based on the assessment completed on ${submittedDate}, several indicators suggest that ${data.name} may be experiencing symptoms commonly associated with depression. This is not a clinical diagnosis but indicates that professional support could be beneficial.`
-      : `Based on the assessment completed on ${submittedDate}, ${data.name}'s responses indicate that current mental health indicators are within normal ranges. This is encouraging, though mental health should be monitored regularly.`;
-
-  // Generate recommendations based on prediction
-  const recommendations =
-    prediction === 1
-      ? [
-          "Schedule an appointment with a mental health professional for a comprehensive evaluation",
-          "Reach out to trusted friends or family members about your feelings",
-          "Establish a consistent daily routine including regular sleep and meal times",
-          "Engage in physical activity for at least 30 minutes daily",
-          "Practice mindfulness or relaxation techniques to manage stress",
-          "If experiencing thoughts of self-harm, contact a crisis helpline immediately",
-        ]
-      : [
-          "Continue maintaining healthy sleep habits (7-9 hours per night)",
-          "Stay physically active with regular exercise",
-          "Nurture social connections and relationships",
-          "Practice stress management techniques",
-          "Monitor your mood and seek support if you notice changes",
-        ];
-
   return NextResponse.json({
-    prediction,
-    confidence: Math.min(confidence, 0.98),
-    evaluation,
-    recommendations,
+    prediction: 0,
+    confidence: 0.7,
+    evaluation: "Unable to fetch AI analysis.",
+    recommendations: [
+      "Maintain a healthy routine",
+      "Stay connected with friends and family",
+      "Exercise regularly",
+      "Practice relaxation techniques",
+      "Seek professional help if needed",
+    ],
     name: data.name,
     submitted_at: data.submitted_at,
     mock: true,
