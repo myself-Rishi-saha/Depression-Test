@@ -59,7 +59,7 @@ export async function POST(request: Request) {
       prediction: result.prediction,
       confidence: result.confidence_score,
       // evaluation: aiOutput.evaluation,
-      // recommendations: aiOutput.recommendations,
+      recommendations: [result.mental_health_tip],
       name: data.name,
       submitted_at: data.submitted_at,
     };
