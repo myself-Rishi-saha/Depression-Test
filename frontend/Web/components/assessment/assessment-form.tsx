@@ -169,29 +169,81 @@ export function AssessmentForm() {
 }
 
 // Default evaluation messages if not provided by API
+// function getDefaultEvaluation(prediction: number): string {
+//   if (prediction === 1) {
+//     return "Based on your responses, several indicators suggest that you may be experiencing symptoms associated with depression. This is not a diagnosis, but rather an indication that speaking with a mental health professional could be beneficial."
+//   }
+//   return "Based on your responses, your current indicators appear to be within normal ranges. While this is encouraging, remember that mental health is dynamic. Continue monitoring your wellbeing and don't hesitate to seek support if needed."
+// }
 function getDefaultEvaluation(prediction: number): string {
-  if (prediction === 1) {
-    return "Based on your responses, several indicators suggest that you may be experiencing symptoms associated with depression. This is not a diagnosis, but rather an indication that speaking with a mental health professional could be beneficial."
+  switch (prediction) {
+    case 0:
+      return "Mild indicators. Maintain a healthy lifestyle and monitor your mental well-being."
+
+    case 1:
+      return "Some signs of stress or low mood. Consider talking to someone you trust."
+
+    case 2:
+      return "Moderate indicators of depression. It is recommended to consult a mental health professional."
+
+    case 3:
+      return "High risk detected. Please consult a doctor or mental health professional as soon as possible."
+
+    default:
+      return "Unable to evaluate."
   }
-  return "Based on your responses, your current indicators appear to be within normal ranges. While this is encouraging, remember that mental health is dynamic. Continue monitoring your wellbeing and don't hesitate to seek support if needed."
 }
 
 // Default recommendations if not provided by API
+// function getDefaultRecommendations(prediction: number): string[] {
+//   if (prediction === 1) {
+//     return [
+//       "Consider scheduling an appointment with a mental health professional for a proper evaluation",
+//       "Reach out to trusted friends or family members about how you're feeling",
+//       "Practice self-care activities such as regular exercise, adequate sleep, and healthy eating",
+//       "Avoid isolating yourself - try to maintain social connections even when it feels difficult",
+//       "If you're having thoughts of self-harm, please contact a crisis helpline immediately",
+//     ]
+//   }
+//   return [
+//     "Continue maintaining healthy sleep habits (7-9 hours per night)",
+//     "Stay physically active - aim for at least 30 minutes of moderate activity most days",
+//     "Nurture your social connections and relationships",
+//     "Practice stress management techniques such as mindfulness or deep breathing",
+//     "Check in with yourself regularly and be aware of any changes in your mood or behavior",
+//   ]
+// }
 function getDefaultRecommendations(prediction: number): string[] {
-  if (prediction === 1) {
-    return [
-      "Consider scheduling an appointment with a mental health professional for a proper evaluation",
-      "Reach out to trusted friends or family members about how you're feeling",
-      "Practice self-care activities such as regular exercise, adequate sleep, and healthy eating",
-      "Avoid isolating yourself - try to maintain social connections even when it feels difficult",
-      "If you're having thoughts of self-harm, please contact a crisis helpline immediately",
-    ]
+  switch (prediction) {
+    case 0:
+      return [
+        "Maintain healthy habits",
+        "Exercise regularly",
+        "Stay socially connected",
+      ]
+
+    case 1:
+      return [
+        "Talk to friends/family",
+        "Practice relaxation techniques",
+        "Monitor mood regularly",
+      ]
+
+    case 2:
+      return [
+        "Consult a therapist",
+        "Avoid isolation",
+        "Follow structured daily routine",
+      ]
+
+    case 3:
+      return [
+        "Seek immediate professional help",
+        "Contact a mental health helpline",
+        "Do not stay alone during distress",
+      ]
+
+    default:
+      return ["No recommendations available"]
   }
-  return [
-    "Continue maintaining healthy sleep habits (7-9 hours per night)",
-    "Stay physically active - aim for at least 30 minutes of moderate activity most days",
-    "Nurture your social connections and relationships",
-    "Practice stress management techniques such as mindfulness or deep breathing",
-    "Check in with yourself regularly and be aware of any changes in your mood or behavior",
-  ]
 }

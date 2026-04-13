@@ -52,101 +52,12 @@ export async function POST(request: Request) {
 
     console.log("Flask prediction:", result);
 
-    // -------------------------
-    // GEMINI AI ANALYSIS
-    // -------------------------
-//     let aiOutput = {
-//       evaluation: "",
-//       recommendations: [] as string[],
-//     };
 
-//     try {
-//       const genAI = new GoogleGenerativeAI(
-//         "AIzaSyCp-fRnoiNuu6HxDc-by_wXcW4Y9untFgw",
-//       );
-
-//       // const model = genAI.getGenerativeModel({
-//       //   model: "gemini-pro",
-//       // })
-
-//       const model = genAI.getGenerativeModel({
-//         model: "gemini-1.5-pro",
-//         safetySettings: [
-//           {
-//             category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-//             threshold: HarmBlockThreshold.BLOCK_NONE,
-//           },
-//           // Add other categories as needed for your specific use case
-//         ],
-//       });
-//       const prompt = `
-// A depression assessment produced the following result.
-
-// Prediction: ${result.prediction}
-// Confidence: ${result.confidence}
-
-// User: ${data.name}
-// Date: ${data.submitted_at}
-
-// Write:
-
-// 1. A short supportive mental health evaluation paragraph
-// 2. 5 helpful recommendations
-
-// Return JSON only:
-
-// {
-//  "evaluation": "...",
-//  "recommendations": ["...", "..."]
-// }
-// `;
-
-//       const geminiRes = await model.generateContent(prompt);
-
-//       // const text = geminiRes.response.text();
-
-//       // console.log("Gemini raw output:", text);
-
-//       // try {
-//       //   aiOutput = JSON.parse(text);
-//       // } catch {
-//       //   aiOutput = {
-//       //     evaluation: text,
-//       //     recommendations: [],
-//       //   };
-//       // }
-//       let text = geminiRes.response.text();
-
-//       console.log("Gemini raw output:", text);
-
-//       // remove markdown formatting
-//       text = text
-//         .replace(/```json/g, "")
-//         .replace(/```/g, "")
-//         .trim();
-
-//       console.log("Cleaned Gemini:", text);
-
-//       try {
-//         aiOutput = JSON.parse(text);
-//       } catch {
-//         aiOutput = {
-//           evaluation: text,
-//           recommendations: [],
-//         };
-//       }
-//     } catch (geminiError) {
-//       console.log("Gemini failed:", geminiError);
-//       aiOutput = {
-//         evaluation: "AI evaluation currently unavailable.",
-//         recommendations: [],
-//       };
-//     }
 
     const finalResponse = {
       // prediction: result.prediction,
       prediction: result.prediction,
-      confidence: result.confidence,
+      confidence: result.confidence_score,
       // evaluation: aiOutput.evaluation,
       // recommendations: aiOutput.recommendations,
       name: data.name,
