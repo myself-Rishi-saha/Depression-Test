@@ -1,6 +1,10 @@
-import sqlite3
+from pymongo import MongoClient
+import os
 
-DB_NAME = "predictions.db"
+MONGO_URI = os.getenv("MONGODB_URI")
 
-def get_connection():
-    return sqlite3.connect(DB_NAME)
+client = MongoClient(MONGO_URI)
+db = client["DepressionTest"]  # your DB name
+
+def get_db():
+    return db

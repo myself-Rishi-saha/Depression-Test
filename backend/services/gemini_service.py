@@ -1,10 +1,34 @@
-def generate_recommendation(prediction, confidence, user_data):
-    """
-    Future Gemini integration point.
-    """
+import os
+from google import genai
 
-    # Temporary fallback logic
-    if prediction == 1:
-        return "You're showing signs of stress. Try a 10-minute walk or breathing exercise."
-    else:
-        return "You're doing well. Maintain your routine and stay consistent."
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+def generate_recommendation(prediction, confidence, data):
+
+    risk_level = "high" if prediction != 0 else "low"
+
+    prompt = f"""
+You are a mental health support assistant.
+
+User mental health prediction:
+- Risk Level: {risk_level}
+- Confidence Score: {confidence:.2f}
+
+User data:
+{data}
+
+Provide practical, supportive, non-clinical advice.
+Keep it concise (5–7 lines).
+Avoid diagnosis.
+Be actionable and empathetic.
+"""
+
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+        return response.text.strip()
+    except Exception as e:
+        print("Gemini Error:", e)
+        return "Unable to generate recommendation at the moment."
