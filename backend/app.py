@@ -1,3 +1,9 @@
+from dotenv import load_dotenv
+from pathlib import Path
+
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(env_path)
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime, UTC
@@ -22,21 +28,13 @@ LOG_PATH = "data/log.txt"
 def predict():
     data = request.json
 
-    # Append log entry
-    with open(LOG_PATH, "a", encoding="utf-8") as f:
-        f.write(json.dumps({
-            "timestamp": datetime.now().isoformat(),
-            "request": data
-        }) + "\n")
+    
 
-    # print("\n--- Incoming Request ---")
-    # print("Raw data:", data)
-    # print("------------------------\n")
+    # print("\n--- Incoming Request ---\n\n")
+    # print(data)
+    # print("\n\n------------------------\n")
 
-    # # --- Validate name ---
-    # name = data.get("name")
-    # if not name:
-    #     return jsonify({"error": "Missing name"}), 400
+
 
     # --- Generate server timestamp ---
     date_time = datetime.now(UTC).isoformat()
@@ -55,18 +53,33 @@ def predict():
 
     print(f"Prediction: {prediction}, Confidence: {confidence:.4f}")
 
-    # --- Gemini recommendation ---
-    # tip = generate_recommendation(prediction, confidence, data)
+    
+
+    if confidence < 0.6:
+        tip = "Model confidence is low. Consider retaking the assessment."
+    else:
+        tip = generate_recommendation(prediction, confidence, data)
+
+    print(tip)
 
     # --- Ollama recommendation ← UNCOMMENTED ---
-    tip = generate_recommendation(prediction, confidence, data)
+    #tip = generate_recommendation(prediction, confidence, data)
 
     # --- Save to DB ---
-    # save_prediction(name, date_time, int(prediction), float(confidence))
+    save_prediction(data, date_time, int(prediction), float(confidence), tip)
 
-    #tip = "This is a placeholder tip."
 
-    # --- Response ---
+    # # Append log entry
+    # with open(LOG_PATH, "a", encoding="utf-8") as f:
+    #     f.write(json.dumps({
+    #         "timestamp": datetime.now().isoformat(),
+    #         "request": data,
+    #         "prediction": int(prediction),
+    #         "confidence_score": float(confidence),
+    #         "mental_health_tip": tip
+    #     }) + "\n")
+
+
     return jsonify({
         "prediction": int(prediction),
         "confidence_score": float(confidence),
