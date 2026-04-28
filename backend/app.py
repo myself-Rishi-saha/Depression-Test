@@ -11,7 +11,8 @@ import joblib
 import pandas as pd
 import os
 import json
-from services.gemini_service import generate_recommendation
+# from services.gemini_service import generate_recommendation
+from services.ollama_service import generate_recommendation
 from db.repository import save_prediction
 
 app = Flask(__name__)
@@ -61,8 +62,12 @@ def predict():
 
     print(tip)
 
+    # --- Ollama recommendation ← UNCOMMENTED ---
+    #tip = generate_recommendation(prediction, confidence, data)
+
     # --- Save to DB ---
     save_prediction(data, date_time, int(prediction), float(confidence), tip)
+
 
     # # Append log entry
     # with open(LOG_PATH, "a", encoding="utf-8") as f:
@@ -73,8 +78,8 @@ def predict():
     #         "confidence_score": float(confidence),
     #         "mental_health_tip": tip
     #     }) + "\n")
-    
-    # --- Response ---
+
+
     return jsonify({
         "prediction": int(prediction),
         "confidence_score": float(confidence),
