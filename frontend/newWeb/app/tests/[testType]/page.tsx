@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/supabase-auth-context'
+import { useAuth } from '@/lib/flask-auth-context'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { testResponseSchema, TestResponseInput } from '@/lib/schemas'
@@ -85,65 +85,62 @@ export default function TestPage() {
   const onSubmit = async (data: TestResponseInput) => {
     setIsSubmitting(true)
     try {
-      // Check if ML predictions are enabled
-      const useMLPredictions = process.env.NEXT_PUBLIC_USE_ML_PREDICTIONS === 'true'
+      console.log('[v0] Sending answers to Flask ML backend:', { testType, answers: data })
+      
+      // Call Flask backend directly for ML prediction
+      const flaskUrl = process.env.NEXT_PUBLIC_FLASK_URL || 'http://localhost:5000'
+      const response = await fetch(`${flaskUrl}/api/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      })
 
-      let result
-      let response
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to get prediction from ML model')
+      }
 
-      if (useMLPredictions) {
-        // Use ML prediction service
-        console.log('[v0] Using ML prediction service')
-        response = await fetch('/api/tests/predict', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            testType,
-            answers: data,
-          }),
-        })
+      const prediction = await response.json()
+      console.log('[v0] ML prediction received:', prediction)
 
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to get ML prediction')
-        }
+      // Map ML prediction (0-3) to severity level and generate recommendations
+      const severityMap = ['minimal', 'mild', 'moderate', 'severe']
+      const severityLevel = severityMap[prediction.prediction] || 'minimal'
 
-        const predictionResult = await response.json()
-        result = {
-          score: predictionResult.result.score,
-          severityLevel: predictionResult.result.severityLevel,
-          interpretation: predictionResult.result.interpretation,
-          recommendations: predictionResult.result.recommendations,
-          confidencePercentage: predictionResult.result.confidencePercentage,
-        }
-      } else {
-        // Fall back to local scoring (original behavior)
-        console.log('[v0] Using local test scoring')
-        result = calculateTestScore(testType, data)
-        
-        response = await fetch('/api/tests/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            testType,
-            score: result.score,
-            severityLevel: result.severityLevel,
-            interpretation: result.interpretation,
-            recommendations: result.recommendations,
-            answers: data,
-          }),
-        })
+      // Get recommendations from Flask or fallback to local
+      const recommendations = prediction.recommendations || [prediction.mental_health_tip || 'Continue monitoring your mental health']
 
-        if (!response.ok) {
-          throw new Error('Failed to save test results')
-        }
+      const result = {
+        score: prediction.prediction,
+        severityLevel,
+        interpretation: prediction.mental_health_tip || 'Assessment complete',
+        recommendations: Array.isArray(recommendations) ? recommendations : [recommendations],
+        confidencePercentage: Math.round((prediction.confidence_score || 0) * 100),
+      }
+
+      // Save to Flask backend
+      const saveResponse = await fetch(`${flaskUrl}/api/predictions/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          testType,
+          prediction: prediction.prediction,
+          confidence: prediction.confidence_score,
+          answers: data,
+        }),
+      })
+
+      if (!saveResponse.ok) {
+        console.warn('[v0] Failed to save prediction to backend, but displaying results')
       }
 
       setTestResult(result)
       setStep('results')
     } catch (error) {
       console.error('[v0] Error submitting test:', error)
-      alert(error instanceof Error ? error.message : 'Failed to save test results. Please try again.')
+      alert(error instanceof Error ? error.message : 'Failed to get prediction. Make sure Flask backend is running on port 5000.')
     } finally {
       setIsSubmitting(false)
     }

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useAuth } from '@/lib/supabase-auth-context'
+import { useAuth } from '@/lib/flask-auth-context'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -41,9 +41,11 @@ export default function ProfilePage() {
   const onSubmit = async (data: UpdateProfileInput) => {
     setIsSaving(true)
     try {
-      const response = await fetch('/api/profile/update', {
+      const flaskUrl = process.env.NEXT_PUBLIC_FLASK_URL || 'http://localhost:5000'
+      const response = await fetch(`${flaskUrl}/api/user/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       })
 

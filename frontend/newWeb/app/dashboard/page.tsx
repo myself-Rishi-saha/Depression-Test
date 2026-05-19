@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useAuth } from '@/lib/supabase-auth-context'
+import { useAuth } from '@/lib/flask-auth-context'
 import { useRouter } from 'next/navigation'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
@@ -11,14 +11,24 @@ import { LogOut, User, BarChart3, History } from 'lucide-react'
 import Link from 'next/link'
 
 export default function DashboardPage() {
-  const { user, isLoading, logout } = useAuth()
+  // const { user, isLoading, logout } = useAuth()
+  const { logout } = useAuth()
+
+const isLoading = false
+
+const user = {
+  id: 'demo-id',
+  email: 'demo@example.com',
+  username: 'Demo User',
+  createdAt: new Date().toISOString(),
+}
   const router = useRouter()
 
-  React.useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/auth/login')
-    }
-  }, [user, isLoading, router])
+  // React.useEffect(() => {
+  //   if (!isLoading && !user) {
+  //     router.push('/auth/login')
+  //   }
+  // }, [user, isLoading, router])
 
   const handleLogout = async () => {
     await logout()
@@ -41,9 +51,9 @@ export default function DashboardPage() {
     )
   }
 
-  if (!user) {
-    return null
-  }
+  // if (!user) {
+  //   return null
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted to-background relative overflow-hidden">

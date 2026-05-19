@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/flask-auth-context'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,14 +9,14 @@ import { Leaf, Heart, Brain, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 export default function HomePage() {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   // React.useEffect(() => {
-  //   if (!loading && isAuthenticated) {
+  //   if (!isLoading && isAuthenticated) {
   //     router.push('/dashboard')
   //   }
-  // }, [isAuthenticated, loading, router])
+  // }, [isAuthenticated, isLoading, router])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted">
