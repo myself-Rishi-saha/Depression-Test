@@ -4,24 +4,10 @@ def validate_feature_ranges(
     data: dict,
     feature_ranges: dict
 ) -> list[str]:
-    """
-    Validate numeric ranges for features.
-
-    Args:
-        data: Request payload
-        feature_ranges:
-            {
-                "Age": (10, 100),
-                "Sleep_Duration": (0, 24)
-            }
-
-    Returns:
-        List of validation errors
-    """
 
     errors = []
 
-    for field, limits in feature_ranges.items():
+    for field, rule in feature_ranges.items():
 
         if field not in data:
             continue
@@ -31,34 +17,48 @@ def validate_feature_ranges(
         if not isinstance(value, (int, float)):
             continue
 
-        min_value, max_value = limits
+        #
+        # Allowed values
+        #
+        if isinstance(rule, list):
 
-        if value < min_value or value > max_value:
+            if value not in rule:
 
-            errors.append(
-                f"{field} must be between "
-                f"{min_value} and {max_value}"
-            )
+                errors.append(
+                    f"{field} must be one of {rule}"
+                )
 
-    return errors
+            continue
 
+        #
+        # Dictionary range
+        #
+        if isinstance(rule, dict):
 
-def validate_score_limits(
-    score: float,
-    min_score: float = 0.0,
-    max_score: float = 1.0
-) -> list[str]:
-    """
-    Validate confidence/probability score boundaries.
-    """
+            min_value = rule["min"]
+            max_value = rule["max"]
 
-    errors = []
+            if value < min_value or value > max_value:
 
-    if score < min_score or score > max_score:
+                errors.append(
+                    f"{field} must be between "
+                    f"{min_value} and {max_value}"
+                )
 
-        errors.append(
-            f"Score must be between "
-            f"{min_score} and {max_score}"
-        )
+            continue
+
+        #
+        # Tuple range (backward compatibility)
+        #
+        if isinstance(rule, tuple):
+
+            min_value, max_value = rule
+
+            if value < min_value or value > max_value:
+
+                errors.append(
+                    f"{field} must be between "
+                    f"{min_value} and {max_value}"
+                )
 
     return errors

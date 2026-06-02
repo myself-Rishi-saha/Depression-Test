@@ -61,7 +61,7 @@ def signup_user(data: dict) -> dict:
         "name": data["name"],
         "email": data["email"],
         "password": hashed_password,
-        "is_verified": False
+        "is_verified": True  # Change here
     })
 
     if not new_user:

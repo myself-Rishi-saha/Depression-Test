@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -8,6 +8,7 @@ from pymongo.errors import PyMongoError
 from app.database.collections import (
     predictions_collection
 )
+
 from app.utils.helpers import (
     get_current_timestamp
 )
@@ -15,7 +16,7 @@ from app.utils.helpers import (
 
 def _get_predictions_collection() -> Collection:
     """
-    Resolve MongoDB predictions collection.
+    Return predictions collection.
     """
 
     if callable(predictions_collection):
@@ -25,65 +26,33 @@ def _get_predictions_collection() -> Collection:
 
 
 def save_prediction(
-    prediction_data: Dict[str, Any]
+    *,
+    user_id: str,
+    input_data: Dict[str, Any],
+    prediction_results: Dict[str, Any],
+    recommendation: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Persist prediction document.
+    Save prediction history record.
     """
 
-    timestamp = get_current_timestamp()
-
-    response_data = prediction_data.get(
-        "prediction_data",
-        {}
-    )
-
     document = {
-        "user_id": prediction_data.get(
-            "user_id"
-        ),
-        "input_data": prediction_data.get(
-            "input_data"
-        ),
-        "model_results": prediction_data.get(
-            "model_results",
-            response_data.get("model_results")
-        ),
-        "final_prediction": prediction_data.get(
-            "final_prediction",
-            response_data.get(
-                "final_prediction",
-                response_data.get("prediction")
-            )
-        ),
-        "confidence_score": prediction_data.get(
-            "confidence_score",
-            response_data.get(
-                "confidence_score",
-                response_data.get("confidence")
-            )
-        ),
-        "severity": prediction_data.get(
-            "severity",
-            response_data.get("severity")
-        ),
-        "recommendation": prediction_data.get(
-            "recommendation",
-            response_data.get(
-                "recommendation"
-            )
-        ),
-        "created_at": timestamp
+        "user_id": user_id,
+        "created_at": get_current_timestamp(),
+        "input_data": input_data,
+        "prediction_results": prediction_results,
+        "recommendation": recommendation
     }
 
-    collection = _get_predictions_collection()
-
     try:
-        result = collection.insert_one(
-            document
+
+        result = (
+            _get_predictions_collection()
+            .insert_one(document)
         )
 
     except PyMongoError as error:
+
         raise RuntimeError(
             "Failed to save prediction"
         ) from error
@@ -98,57 +67,88 @@ def get_prediction_history(
     limit: int = 20
 ) -> List[Dict[str, Any]]:
     """
-    Retrieve prediction history for user.
+    Get prediction history for a user.
     """
 
-    collection = _get_predictions_collection()
-
     try:
-        predictions_cursor = (
-            collection.find(
-                {"user_id": user_id}
-            )
+
+        return list(
+            _get_predictions_collection()
+            .find({"user_id": user_id})
             .sort("created_at", -1)
             .limit(limit)
         )
 
-        predictions = list(
-            predictions_cursor
-        )
-
     except PyMongoError as error:
+
         raise RuntimeError(
             "Failed to retrieve prediction history"
         ) from error
-
-    return predictions
 
 
 def get_prediction_by_id(
     prediction_id: str
 ) -> Optional[Dict[str, Any]]:
     """
-    Retrieve prediction document by ID.
+    Get prediction by ID.
     """
 
     try:
+
         object_id = ObjectId(
             prediction_id
         )
 
     except InvalidId:
+
         return None
 
-    collection = _get_predictions_collection()
-
     try:
-        prediction = collection.find_one({
-            "_id": object_id
-        })
+
+        return (
+            _get_predictions_collection()
+            .find_one(
+                {"_id": object_id}
+            )
+        )
 
     except PyMongoError as error:
+
         raise RuntimeError(
             "Failed to retrieve prediction"
         ) from error
 
-    return prediction
+
+def delete_prediction(
+    prediction_id: str
+) -> bool:
+    """
+    Delete prediction by ID.
+    """
+
+    try:
+
+        object_id = ObjectId(
+            prediction_id
+        )
+
+    except InvalidId:
+
+        return False
+
+    try:
+
+        result = (
+            _get_predictions_collection()
+            .delete_one(
+                {"_id": object_id}
+            )
+        )
+
+    except PyMongoError as error:
+
+        raise RuntimeError(
+            "Failed to delete prediction"
+        ) from error
+
+    return result.deleted_count > 0
