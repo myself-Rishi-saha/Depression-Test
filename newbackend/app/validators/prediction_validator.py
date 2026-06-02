@@ -2,6 +2,17 @@
 
 from typing import Any
 
+<<<<<<< HEAD
+=======
+from app.constants.model_features import (
+    ALL_FEATURES
+)
+
+from app.constants.model_ranges import (
+    ALL_FEATURE_RANGES
+)
+
+>>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
 from app.validators.type_validator import (
     validate_numeric_fields
 )
@@ -10,6 +21,7 @@ from app.validators.range_validator import (
     validate_feature_ranges
 )
 
+<<<<<<< HEAD
 from ml.inference.model_loader import (
     get_feature_order
 )
@@ -84,6 +96,24 @@ def validate_prediction_input(
 ) -> list[str]:
     """
     Main prediction validation pipeline.
+=======
+
+NUMERIC_FIELDS = ALL_FEATURES
+
+
+def validate_prediction_input(
+    data: dict[str, Any]
+) -> list[str]:
+    """
+    Main prediction validation pipeline.
+
+    Validates:
+    1. JSON object
+    2. Required features
+    3. Unknown features
+    4. Numeric values
+    5. Feature ranges
+>>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
     """
 
     if not isinstance(data, dict):
@@ -93,6 +123,7 @@ def validate_prediction_input(
 
     errors = []
 
+<<<<<<< HEAD
     required_features = _resolve_required_features(
         feature_set=feature_set,
         test_type=test_type
@@ -122,15 +153,52 @@ def validate_prediction_input(
     if range_errors:
         errors.extend(range_errors)
 
+=======
+    errors.extend(
+        validate_required_features(
+            data=data,
+            required_features=ALL_FEATURES
+        )
+    )
+
+    errors.extend(
+        validate_unknown_features(
+            data=data,
+            allowed_features=ALL_FEATURES
+        )
+    )
+
+    errors.extend(
+        validate_numeric_fields(
+            data=data,
+            numeric_fields=NUMERIC_FIELDS
+        )
+    )
+
+    errors.extend(
+        validate_feature_ranges(
+            data=data,
+            feature_ranges=ALL_FEATURE_RANGES
+        )
+    )
+
+>>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
     return errors
 
 
 def validate_required_features(
     data: dict[str, Any],
+<<<<<<< HEAD
     required_features: list[str] | None = None
 ) -> list[str]:
     """
     Ensure required ML features exist.
+=======
+    required_features: list[str]
+) -> list[str]:
+    """
+    Ensure all required features exist.
+>>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
     """
 
     if not isinstance(data, dict):
@@ -138,11 +206,14 @@ def validate_required_features(
             "Prediction payload must be a JSON object."
         ]
 
+<<<<<<< HEAD
     required_features = (
         required_features
         or BASE_REQUIRED_FEATURES
     )
 
+=======
+>>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
     errors = []
 
     for feature in required_features:
@@ -153,4 +224,30 @@ def validate_required_features(
                 f"Missing required feature: {feature}"
             )
 
+<<<<<<< HEAD
+=======
+    return errors
+
+
+def validate_unknown_features(
+    data: dict[str, Any],
+    allowed_features: list[str]
+) -> list[str]:
+    """
+    Reject unexpected fields.
+    """
+
+    allowed = set(allowed_features)
+
+    errors = []
+
+    for feature in data.keys():
+
+        if feature not in allowed:
+
+            errors.append(
+                f"Unknown feature: {feature}"
+            )
+
+>>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
     return errors

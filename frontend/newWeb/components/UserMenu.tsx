@@ -1,3 +1,4 @@
+
 // "use client";
 
 // import { useState, useRef, useEffect } from "react";
@@ -105,12 +106,14 @@ export function UserMenu() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+
   }, []);
 
   const handleLogout = () => {
     logout();
     setIsOpen(false);
     router.push("/auth/login");
+
   };
 
   if (!isAuthenticated) {
@@ -118,11 +121,14 @@ export function UserMenu() {
       <div className="flex items-center gap-3">
         <Link href="/auth/login">
           <button className="px-5 py-2.5 text-gray-700 hover:text-blue-600 font-semibold transition-all duration-200 hover:bg-blue-50 rounded-full">
+
             Sign In
           </button>
         </Link>
         <Link href="/auth/signup">
+
           <button className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all duration-200 font-semibold">
+
             Sign Up
           </button>
         </Link>
@@ -134,6 +140,7 @@ export function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+<<<<<<< HEAD
         className="flex items-center gap-3 px-4 py-2.5 rounded-full hover:bg-gray-100 transition-all duration-200 group"
       >
         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all duration-200">
@@ -182,8 +189,11 @@ export function UserMenu() {
               <span className="font-medium">Sign Out</span>
             </button>
           </div>
+
         </div>
       )}
     </div>
   );
+
 }
+

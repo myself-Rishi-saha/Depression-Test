@@ -1,3 +1,4 @@
+
 // 'use client';
 
 // import React, { useEffect, useState, Suspense } from 'react';
@@ -152,6 +153,7 @@ import { getAssessmentHistory } from '@/lib/api/mlClient'
 import { AssessmentResult } from '@/lib/types'
 import { useQuestionnaire } from '@/lib/contexts/QuestionnaireContext'
 
+
 const DEMO_RESULTS: { [key: string]: AssessmentResult } = {
   '1': {
     id: '1',
@@ -305,10 +307,12 @@ function ResultsContent() {
         </Card>
       </main>
     )
+
   }
 
   if (!result) {
     return (
+
       <main className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
         <Card className="p-10 text-center shadow-xl border-0 max-w-lg">
           <div className="text-5xl mb-4">📊</div>
@@ -565,6 +569,7 @@ function ResultsContent() {
       </div>
     </main>
   )
+
 }
 
 export default function ResultsPage() {
@@ -576,6 +581,7 @@ export default function ResultsPage() {
             <div className="text-5xl mb-4">⏳</div>
             <p className="text-gray-600 font-medium">Loading results...</p>
           </Card>
+
         </main>
       }
     >
@@ -583,4 +589,5 @@ export default function ResultsPage() {
     </Suspense>
   )
 }
+
 

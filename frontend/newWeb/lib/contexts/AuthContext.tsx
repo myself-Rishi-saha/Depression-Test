@@ -155,7 +155,6 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-
 export interface User {
   id: string;
   name: string;
@@ -175,6 +174,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -212,11 +212,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       //   }),
       // });
       const response = await fetch("http://localhost:5000/auth/login", {
+
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
+
         body: JSON.stringify({
           email,
           password,
@@ -227,6 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!response.ok) {
         throw new Error(responseData.message || "Login failed");
+
       }
 
       console.log("[v0] FULL LOGIN RESPONSE:", responseData);
@@ -255,6 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       localStorage.setItem("auth_token", newToken);
       localStorage.setItem("auth_user", JSON.stringify(userData));
+
     } catch (error) {
       console.error("[v0] Login error:", error);
       throw error;
@@ -275,10 +279,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }),
       });
 
+
       const responseData = await response.json();
 
       if (!response.ok) {
         throw new Error(responseData.message || "Signup failed");
+
       }
 
       console.log("[v0] FULL SIGNUP RESPONSE:", responseData);
@@ -307,6 +313,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       localStorage.setItem("auth_token", newToken);
       localStorage.setItem("auth_user", JSON.stringify(userData));
+
     } catch (error) {
       console.error("[v0] Signup error:", error);
       throw error;
@@ -347,3 +354,4 @@ export function useAuth() {
 
   return context;
 }
+

@@ -1,3 +1,4 @@
+
 // 'use client';
 
 // import React, { useState, useEffect } from 'react';
@@ -237,6 +238,7 @@
 // }
 "use client";
 
+
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import Link from 'next/link';
@@ -251,7 +253,7 @@ interface AssessmentTest {
   duration: string;
   href: string;
   gradient?: boolean;
-  color: string;
+
 }
 
 const TESTS: AssessmentTest[] = [
@@ -263,8 +265,9 @@ const TESTS: AssessmentTest[] = [
     questions: 9,
     duration: '~5 min',
     href: '/test/phq9',
-    color: 'blue',
-  }, 
+// <<<<<<< HEAD
+//     color: 'blue',
+  },
   {
     id: 'bdi2',
     title: 'BDI-2',
@@ -273,7 +276,7 @@ const TESTS: AssessmentTest[] = [
     questions: 21,
     duration: '~10 min',
     href: '/test/bdi2',
-    color: 'indigo',
+    //color: 'indigo',
   },
   {
     id: 'cesd',
@@ -283,7 +286,10 @@ const TESTS: AssessmentTest[] = [
     questions: 20,
     duration: '~8 min',
     href: '/test/cesd',
-    color: 'purple',
+// <<<<<<< HEAD
+//     color: 'purple',
+// =======
+// >>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
   },
   {
     id: 'all59',
@@ -294,13 +300,17 @@ const TESTS: AssessmentTest[] = [
     duration: '~30 min',
     href: '/test/all59',
     gradient: true,
-    color: 'gradient',
+// <<<<<<< HEAD
+//     color: 'gradient',
+// =======
+// >>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
   },
 ];
 
 export function AssessmentCarousel() {
   const [currentIndex, setCurrentIndex] = useState(1);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
+
 
   useEffect(() => {
     if (!isAutoPlay) return;
@@ -345,6 +355,7 @@ export function AssessmentCarousel() {
     }
   };
 
+
   const getColorClasses = (color: string, isCenter: boolean) => {
     if (color === 'gradient') {
       return isCenter
@@ -354,7 +365,7 @@ export function AssessmentCarousel() {
     
     const colorMap: Record<string, string> = {
       blue: isCenter 
-        ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-400 shadow-xl' 
+        ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-400 shadow-xl'
         : 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200',
       indigo: isCenter
         ? 'bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-400 shadow-xl'
@@ -401,11 +412,13 @@ export function AssessmentCarousel() {
                     className="w-80 h-full flex transition-all duration-300 cursor-pointer"
                   >
                     <Card
+
                       className={`w-full border-0 overflow-hidden group flex flex-col ${getColorClasses(test.color, true)}`}
                     >
                       <div className="p-8 flex flex-col h-full">
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 ${getIconColor(test.color)} bg-current opacity-10`}>
                           <span className="text-3xl font-bold">{test.icon}</span>
+
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-3">
                           {test.title}
@@ -422,6 +435,7 @@ export function AssessmentCarousel() {
                             <Clock className="w-4 h-4" />
                             {test.duration}
                           </div>
+
                         </div>
                       </div>
                     </Card>
@@ -437,6 +451,7 @@ export function AssessmentCarousel() {
                       <div className="p-8 flex flex-col h-full">
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 ${getIconColor(test.color)} bg-current opacity-10`}>
                           <span className="text-3xl font-bold">{test.icon}</span>
+
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-3">
                           {test.title}
@@ -453,6 +468,7 @@ export function AssessmentCarousel() {
                             <Clock className="w-4 h-4" />
                             {test.duration}
                           </div>
+
                         </div>
                       </div>
                     </Card>
@@ -497,9 +513,12 @@ export function AssessmentCarousel() {
         </button>
       </div>
 
+
       <div className="text-center mt-6 text-gray-600 text-sm">
         Click the card to start this assessment or use arrows to explore
       </div>
     </div>
   );
+
 }
+

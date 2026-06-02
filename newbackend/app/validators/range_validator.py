@@ -4,6 +4,7 @@ def validate_feature_ranges(
     data: dict,
     feature_ranges: dict
 ) -> list[str]:
+<<<<<<< HEAD
     """
     Validate numeric ranges for features.
 
@@ -22,6 +23,12 @@ def validate_feature_ranges(
     errors = []
 
     for field, limits in feature_ranges.items():
+=======
+
+    errors = []
+
+    for field, rule in feature_ranges.items():
+>>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
 
         if field not in data:
             continue
@@ -31,6 +38,7 @@ def validate_feature_ranges(
         if not isinstance(value, (int, float)):
             continue
 
+<<<<<<< HEAD
         min_value, max_value = limits
 
         if value < min_value or value > max_value:
@@ -60,5 +68,50 @@ def validate_score_limits(
             f"Score must be between "
             f"{min_score} and {max_score}"
         )
+=======
+        #
+        # Allowed values
+        #
+        if isinstance(rule, list):
+
+            if value not in rule:
+
+                errors.append(
+                    f"{field} must be one of {rule}"
+                )
+
+            continue
+
+        #
+        # Dictionary range
+        #
+        if isinstance(rule, dict):
+
+            min_value = rule["min"]
+            max_value = rule["max"]
+
+            if value < min_value or value > max_value:
+
+                errors.append(
+                    f"{field} must be between "
+                    f"{min_value} and {max_value}"
+                )
+
+            continue
+
+        #
+        # Tuple range (backward compatibility)
+        #
+        if isinstance(rule, tuple):
+
+            min_value, max_value = rule
+
+            if value < min_value or value > max_value:
+
+                errors.append(
+                    f"{field} must be between "
+                    f"{min_value} and {max_value}"
+                )
+>>>>>>> 2c0096354ce35b841f35c6add81b449cd074e09a
 
     return errors

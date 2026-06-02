@@ -1,3 +1,4 @@
+
 // 'use client';
 
 // import React from 'react';
@@ -72,10 +73,13 @@
 // }
 "use client";
 
+
 import React from 'react';
 import { Question } from '@/lib/types';
 import { Card } from './ui/card';
+
 import { Check } from 'lucide-react';
+
 
 interface QuestionCardProps {
   question: Question;
@@ -93,6 +97,7 @@ export function QuestionCard({
   totalQuestions
 }: QuestionCardProps) {
   return (
+
     <Card className="w-full border-0 shadow-xl bg-white overflow-hidden rounded-2xl">
       <div className="p-8 sm:p-10">
         <div className="inline-flex items-center gap-3 mb-8">
@@ -100,6 +105,7 @@ export function QuestionCard({
             <span className="text-white text-sm font-bold">{questionNumber}</span>
           </div>
           <span className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+
             Question {questionNumber} of {totalQuestions}
           </span>
         </div>
@@ -107,6 +113,7 @@ export function QuestionCard({
         <h3 className="mb-8 text-2xl sm:text-3xl font-bold text-gray-900 leading-relaxed">
           {question.text}
         </h3>
+
 
         <div className="space-y-3 mb-8">
           {question.scale.map((option, idx) => (
@@ -123,16 +130,21 @@ export function QuestionCard({
                 <span className="text-base">{option.label}</span>
                 {answer === option.value && (
                   <Check className="w-5 h-5 text-blue-600" />
+
                 )}
               </div>
             </button>
           ))}
         </div>
 
+
         <p className="text-xs text-gray-500 text-center">
+
           Select the option that best describes your experience
         </p>
       </div>
     </Card>
   );
+
 }
+

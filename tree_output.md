@@ -76,6 +76,7 @@
     - README.md
     - tsconfig.json
   - newWeb
+    - .next
     - app
       - auth
         - forgot-password
@@ -167,6 +168,7 @@
       - test-data.ts
       - types.ts
       - utils.ts
+    - node_modules
     - public
       - apple-icon.png
       - icon-dark-32x32.png
@@ -300,6 +302,13 @@
     - tsconfig.json
 - newbackend
   - app
+
+    - constants
+      - __pycache__
+      - model_features.py
+      - model_paths.py
+      - model_ranges.py
+      - __init__.py
     - controllers
       - __pycache__
       - auth_controller.py
@@ -347,6 +356,8 @@
       - auth_service.py
       - email_service.py
       - google_auth_service.py
+      - history_service.py
+
       - jwt_service.py
       - logging_service.py
       - prediction_service.py
@@ -562,6 +573,16 @@
   - Refactor_v1.md
   - requirements.txt
   - run.py
+
+- venv
+  - Include
+  - Lib
+    - site-packages
+  - Scripts
+    - python.exe
+    - pythonw.exe
+  - .gitignore
+  - pyvenv.cfg
 - .gitignore
 - convert_to_tree.py
 - convert_to_tree_markdown.py
