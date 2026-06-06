@@ -1,11 +1,46 @@
 from flask import Flask
+# In newbackend/app/__init__.py, add this import at the top
+from flask_cors import CORS
 
+def create_app() -> Flask:
+    app = Flask(__name__)
+
+    # Load configuration
+    app.config.from_object(load_config())
+
+    # ✅ Initialize CORS BEFORE middleware/routes
+    CORS(
+        app,
+        resources={
+            r"/*": {
+                "origins": [
+                    "http://localhost:3000",
+                    "http://127.0.0.1:3000",
+                    "http://localhost:3001"
+                ],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": [
+                    "Content-Type",
+                    "Authorization"
+                ],
+                "expose_headers": [
+                    "Content-Type",
+                    "Authorization"
+                ],
+                "supports_credentials": True,
+                "max_age": 3600
+            }
+        }
+    )
 from app.config import load_config
 
 # Route registration
 from app.routes.auth_routes import register_auth_routes
 from app.routes.prediction_routes import register_prediction_routes
 from app.routes.history_routes import register_history_routes
+from app.routes.dashboard_routes import (
+    register_dashboard_routes
+)
 
 # Middleware
 from app.middleware.logging_middleware import (
@@ -95,6 +130,7 @@ def create_app() -> Flask:
     register_auth_routes(app)
     register_prediction_routes(app)
     register_history_routes(app)
+    register_dashboard_routes(app)
 
     # Graceful DB cleanup
     @app.teardown_appcontext
