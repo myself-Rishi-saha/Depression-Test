@@ -1,6 +1,6 @@
 # app/database/init_db.py
 
-from app.database.connection import get_db
+from app.database.database import get_db
 
 def initialize_database():
     db = get_db()
