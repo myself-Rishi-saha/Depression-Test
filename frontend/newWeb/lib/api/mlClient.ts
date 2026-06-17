@@ -499,6 +499,7 @@ function mapApiHistoryToAssessmentResults(
     ) {
       testType = "cesd";
     }
+    console.log("[v0] Mapped test type:", testType);
     return {
       id: `remote-${index}-${new Date(item.date).getTime()}`,
       testType: testType,

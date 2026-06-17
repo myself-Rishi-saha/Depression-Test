@@ -49,7 +49,7 @@ export function HistoryList({ results, onDelete }: HistoryListProps) {
 
   return (
     <div className="space-y-4">
-      {results.map((result) => {
+      {results.map((result,index) => {
         const testConfig = getTestConfig(result.testType);
         const severity = SEVERITY_LABELS[result.prediction];
         if (!severity) {
@@ -129,7 +129,7 @@ export function HistoryList({ results, onDelete }: HistoryListProps) {
                   {/* Action Buttons */}
                   <div className="flex gap-2 w-full sm:w-auto">
                     <Link
-                      href={`/results?id=${result.id}`}
+                      href={`/results?id=${index}`}
                       className="flex-1 sm:flex-none"
                     >
                       <button className="w-full px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm flex items-center justify-center gap-2 group/btn">
