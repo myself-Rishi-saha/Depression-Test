@@ -301,7 +301,7 @@ export default function TestPage() {
 
     try {
       let result;
-      let timestamp=Date.now(); // Default timestamp in case of error
+      let prediction_id; // Default timestamp in case of error
       if (testType === "phq9" || testType === "bdi2" || testType === "cesd") {
         console.log("[v0] Using local scoring for", testType);
         const scoringFunction = getScoringFunction(testType as any);
@@ -330,7 +330,8 @@ export default function TestPage() {
         );
 
         const savedData = await response.json();
-         //timestamp =savedData.history.date;
+        result =savedData.data;
+        prediction_id = savedData.data.prediction_id;
         if (!response.ok) {
           throw new Error(savedData.message || "Failed to save assessment");
         }
@@ -355,9 +356,9 @@ export default function TestPage() {
       }
       saveAssessmentToHistory(result);
 
-      //console.log("[v0] Redirecting to results with result:", timestamp);
-      // router.push(`/results?id=${result.id}`);
-      router.push(`/results?result=${0}`);
+      console.log("[v0] Redirecting to results with result:", prediction_id);
+       router.push(`/results?id=${prediction_id}`);
+      //router.push(`/results?result=${0}`);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to submit assessment";

@@ -449,6 +449,7 @@ export function getProgressPercentage(
 // }
 export interface ApiResponseHistoryItem {
   date: string;
+  prediction_id: string | null;
   prediction_value: {
     bdi: { confidence: number; score: number };
     cesd: { confidence: number; score: number };
@@ -501,7 +502,7 @@ function mapApiHistoryToAssessmentResults(
     }
     console.log("[v0] Mapped test type:", testType);
     return {
-      id: `remote-${index}-${new Date(item.date).getTime()}`,
+      id: item.prediction_id ?? "",
       testType: testType,
       date: item.date,
       answers: {}, // The dashboard endpoint payload doesn't return raw question blocks

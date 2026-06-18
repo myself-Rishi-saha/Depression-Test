@@ -392,7 +392,6 @@ export default function DashboardPage() {
     };
 
     loadAssessments();
-    console.log("sortedHistory =>", sortedHistory);
 
   }, [token]);
 

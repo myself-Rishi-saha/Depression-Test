@@ -214,7 +214,7 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const { selectTest, resetQuestionnaire } = useQuestionnaire();
   const { token } = useAuth();
-  const resultId = Number(searchParams.get("id"));
+  const resultId = searchParams.get("id");
 
   const [result, setResult] = useState<AssessmentResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -285,8 +285,8 @@ function ResultsContent() {
           if (resultId) {
             // Look for it in the real database history array
 
-            // const found = history.find((r) => r.id === resultId || String(r.id).includes(resultId));
-            const found= history[resultId];
+             const found = history.find((r) => r.id === resultId || String(r.id).includes(resultId));
+            //const found= history[resultId];
             // FIX: Fall back to DEMO_RESULTS['1'] if the specific ID doesn't exist anywhere yet
             setResult(found);
           } else {
