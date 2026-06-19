@@ -25,7 +25,7 @@ export function HistoryList({ results, onDelete }: HistoryListProps) {
   };
 
   const getSeverityBadgeColor = (prediction: number) => {
-    return SEVERITY_LABELS[prediction as 0 | 1 | 2 | 3].color;
+    return SEVERITY_LABELS[prediction as 0 | 1 | 2 | 3 |4].color;
   };
 
   if (results.length === 0) {
@@ -97,13 +97,14 @@ export function HistoryList({ results, onDelete }: HistoryListProps) {
                   {/* Severity Badge and Confidence */}
                   <div className="flex items-center gap-6">
                     <div
-                      className={`px-5 py-3 rounded-lg text-center ${severity.color} min-w-[120px]`}
+                      className={`px-5 py-3 rounded-lg text-center ${severity?.color} min-w-[120px]`}
                     >
                       <div className="font-bold text-lg leading-tight">
                         {severity.label}
                       </div>
                       <div className="text-xs opacity-80 mt-1">
-                        Score: {result.prediction}/3
+                        {result?.testType === "phq9" ? `Score: ${result.prediction+1}/5`  : `Score: ${result.prediction+1}/4` }
+                        
                         {/* {result.testType === "all59"
                           ? `Prediction: ${result.prediction}/3`
                           : `Score: ${result.score}`} */}

@@ -261,7 +261,7 @@ export default function TestPage() {
     previousQuestion,
     canProceed,
   } = useQuestionnaire();
-  const { token } = useAuth();
+  const { token , loading:isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [slideDirection, setSlideDirection] = useState<"left" | "right">(
@@ -270,6 +270,14 @@ export default function TestPage() {
   const [isSliding, setIsSliding] = useState(false);
 
   // Track slide direction when question changes
+     useEffect(() => {
+       if (isLoading) return;
+   
+       if (!token) {
+         router.replace("/auth/login");
+         return;
+       }
+     }, [token]);
   useEffect(() => {
     setIsSliding(true);
     const timer = setTimeout(() => {
