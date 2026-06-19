@@ -139,27 +139,34 @@ def generate_prediction(
         user_data=input_data
     )
 
-    # recommendation = "Based on the predictions, we recommend consulting a mental health professional for a comprehensive evaluation and personalized treatment plan."
-
-    #
-    # Future persistence hook
-    #
-
-    # print("user_id =", user_id)
-    # print("persist_history =", persist_history)
-
     if persist_history and user_id:
 
-        # print("ABOUT TO SAVE PREDICTION")
-
-        save_prediction(
+        saved_prediction = save_prediction(
             user_id=user_id,
             input_data=input_data,
             prediction_results=prediction_results,
             recommendation=recommendation
         )
 
-    return prediction_results
+    prediction_id = saved_prediction["prediction_id"]
+
+    prediction_results2 = {
+        "phq9": {
+            "score": phq9_score,
+            "confidence": phq9_confidence
+        },
+        "bdi": {
+            "score": bdi_score,
+            "confidence": bdi_confidence
+        },
+        "cesd": {
+            "score": cesd_score,
+            "confidence": cesd_confidence
+        },
+        "prediction_id": prediction_id,
+    }
+
+    return prediction_results2
 
 
 def save_manual_test(
