@@ -361,10 +361,12 @@ export default function TestPage() {
         console.log("[v0] Using ML API for complete assessment");
         // result = await submitToMLAPI(answers);
         result = await submitToMLAPI(answers, token);
+        prediction_id = result.prediction_id;
       }
       saveAssessmentToHistory(result);
 
       console.log("[v0] Redirecting to results with result:", prediction_id);
+      //console.log("Received from submitToMLAPI:", result);
        router.push(`/results?id=${prediction_id}`);
       //router.push(`/results?result=${0}`);
     } catch (err) {

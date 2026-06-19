@@ -358,9 +358,7 @@ export default function DashboardPage() {
       return;
     }
   }, [token]);
-
-  useEffect(() => {
-    const loadAssessments = async () => {
+      const loadAssessments = async () => {
       // if (token === undefined) return; // still loading
 
       // if (token === null) {
@@ -370,7 +368,7 @@ export default function DashboardPage() {
 
       try {
         setLoading(true);
-        let assessments = await getAssessmentHistory(token);
+        let assessments = await getAssessmentHistory(token||"");
 
         // If API returns nothing, swap with dummy metrics for visualization
         if (!assessments || assessments.length === 0) {
@@ -412,14 +410,44 @@ export default function DashboardPage() {
       }
     };
 
+  useEffect(() => {
+
+
     loadAssessments();
   }, [token]);
 
-  const handleDelete = (id: string) => {
-    const updated = history.filter((r) => r.id !== id);
+  // const handleDelete = (id: string) => {
+  //   const updated = history.filter((r) => r.id !== id);
+  //   setHistory(updated);
+
+  //   // Recalculate statistics with remaining records safely
+  //   if (updated.length > 0) {
+  //     setStatistics({
+  //       totalAssessments: updated.length,
+  //       lastAssessmentDate: updated[0].date,
+  //       averageConfidence:
+  //         updated.reduce((sum, a) => sum + (a.confidenceScore || 0), 0) /
+  //         updated.length,
+  //       testTypeCounts: updated.reduce((acc: any, a) => {
+  //         acc[a.testType] = (acc[a.testType] || 0) + 1;
+  //         return acc;
+  //       }, {}),
+  //     });
+  //   } else {
+  //     setStatistics(null);
+  //   }
+  // };
+const handleDelete = async (predictionId: string) => {
+  console.log("Attempting to delete assessment with prediction ID:", predictionId);
+  try {
+    await clearAssessmentHistory(predictionId, token || "");
+
+    const updated = history.filter(
+      (r) => r.prediction_id !== predictionId
+    );
+
     setHistory(updated);
 
-    // Recalculate statistics with remaining records safely
     if (updated.length > 0) {
       setStatistics({
         totalAssessments: updated.length,
@@ -432,26 +460,30 @@ export default function DashboardPage() {
           return acc;
         }, {}),
       });
+      localStorage.setItem('assessmentHistory', JSON.stringify(updated));
+      loadAssessments();
     } else {
       setStatistics(null);
     }
-  };
+  } catch (error) {
+    console.error("Error deleting assessment:", error);
+  }
+};
+const handleClearAll = async () => {
+  if (!window.confirm("Delete all assessments?")) return;
 
-  const handleClearAll = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete all assessment results? This cannot be undone.",
-      )
-    ) {
-      try {
-        await clearAssessmentHistory(token || "");
-        setHistory([]);
-        setStatistics(null);
-      } catch (error) {
-        console.error("[v0] Error clearing history on server:", error);
-      }
+  try {
+    for (const item of history) {
+      await clearAssessmentHistory(item.id, token || "");
     }
-  };
+
+    setHistory([]);
+    setStatistics(null);
+    loadAssessments();
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const sortedHistory = [...history].sort((a, b) => {
     if (sortBy === "date") {
@@ -642,7 +674,7 @@ export default function DashboardPage() {
                     Sort by Severity
                   </button>
                   <button
-                    onClick={handleClearAll}
+                    //onClick={handleClearAll}
                     className="px-4 py-2 rounded-lg font-medium text-sm bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
                   >
                     Clear All
