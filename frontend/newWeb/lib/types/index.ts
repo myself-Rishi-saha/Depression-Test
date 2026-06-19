@@ -31,6 +31,7 @@ export interface Answer {
 export interface AssessmentResult {
   id: string;
   testType: TestType;
+  prediction_id?: string; // Optional prediction ID from the backend
   date: string;
   answers: Record<string, number>;
   prediction: SeverityLevel;

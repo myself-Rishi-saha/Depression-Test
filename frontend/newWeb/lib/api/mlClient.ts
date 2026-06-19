@@ -5,9 +5,10 @@ import {
   TestConfig,
 } from "../types";
 import { getTestConfig } from "../data/testConfigs";
+import { es } from "date-fns/locale/es";
 
 // const FLASK_API_URL = 'http://127.0.0.1:5000';
-const FLASK_API_URL = "http://127.0.0.1:5000";
+const FLASK_API_URL = process.env.FLASK_API_URL || "http://127.0.0.1:5000";
 
 /**
  * Maps answers from our UI format to the ML model's expected feature format
@@ -256,6 +257,7 @@ interface PostmanPredictionResponse {
     bdi: { confidence: number; score: number };
     cesd: { confidence: number; score: number };
     phq9: { confidence: number; score: number };
+    prediction_id: string;
   };
 }
 
@@ -291,7 +293,7 @@ export async function submitToMLAPI(
   // );
 
   // Enforce absolute fallback to 127.0.0.1 if your env variable is missing/wrong
-  const targetUrl = "http://127.0.0.1:5000/predictions/predict";
+  const targetUrl = `${FLASK_API_URL}/predictions/predict`;
   try {
     const response = await fetch(targetUrl, {
       method: "POST",
@@ -313,11 +315,13 @@ export async function submitToMLAPI(
     }
 
     const resBody: PostmanPredictionResponse = await response.json();
-    console.log("[v0] Raw Flask API response body received:", resBody);
-
+    // console.log("[v0] Raw Flask API response body received:", resBody);
+    console.log("Prediction ID from backend:", resBody.data.prediction_id);
     // Using BDI metrics as your default screen values for UI compatibility
     const targetMetrics = resBody.data.bdi || resBody.data.phq9;
-
+    const id =
+      resBody.data.prediction_id ||
+      `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const result: AssessmentResult = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       testType: "all59",
@@ -325,6 +329,7 @@ export async function submitToMLAPI(
       answers,
       prediction: targetMetrics.score as 0 | 1 | 2 | 3,
       confidenceScore: targetMetrics.confidence,
+      prediction_id: resBody.data.prediction_id,
       mentalHealthTips: [
         "Assessment complete. Review scale specific metrics via history data breakdown.",
       ],
@@ -466,7 +471,7 @@ interface DashboardApiResponse {
   };
 }
 
-const DASHBOARD_API_URL = "http://127.0.0.1:5000/dashboard";
+const DASHBOARD_API_URL = `${FLASK_API_URL}/dashboard`;
 
 /**
  * Helper to map the remote backend history items into your local AssessmentResult interface
@@ -540,13 +545,15 @@ function mapApiHistoryToAssessmentResults(
 
     if (agreementCount === 1 && predictions.length === 3) {
       // All three predicted different scores
-      prediction = Math.max(
-        ...predictions.map((p) => p!.score)
-      ) as 0 | 1 | 2 | 3;
+      prediction = Math.max(...predictions.map((p) => p!.score)) as
+        | 0
+        | 1
+        | 2
+        | 3;
     } else {
       // Majority vote
       prediction = [...scoreCounts.entries()].reduce((best, curr) =>
-        curr[1] > best[1] ? curr : best
+        curr[1] > best[1] ? curr : best,
       )[0] as 0 | 1 | 2 | 3;
     }
 
@@ -620,17 +627,46 @@ export async function saveAssessmentToHistory(
   token?: string,
 ): Promise<void> {
   console.log(
-    "[v0] saveAssessmentToHistory is handled server-side during evaluation.",
+    " saveAssessmentToHistory is handled server-side during evaluation.",
   );
 }
 
 /**
  * Kept the name. Clears remote references if needed, or logs action.
  */
-export async function clearAssessmentHistory(token?: string): Promise<void> {
-  console.log(
-    "[v0] Clear requested. Persistent history is managed by backend database.",
-  );
+// export async function clearAssessmentHistory(token?: string): Promise<void> {
+//   console.log(
+//     "Clear requested. Persistent history is managed by backend database.",
+//   );
+// }
+export async function clearAssessmentHistory(
+  predictionId: string,
+  token: string,
+): Promise<void> {
+  try {
+    const response = await fetch(
+      `${FLASK_API_URL}/predictions/${predictionId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token.trim()}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(
+        `Failed to delete ${predictionId}: ${response.status} ${error}`,
+      );
+    }
+
+    const result = await response.json();
+    console.log("Deleted:", result.data.prediction_id);
+  } catch (error) {
+    console.error("Error deleting assessment:", error);
+    throw error;
+  }
 }
 
 /**
