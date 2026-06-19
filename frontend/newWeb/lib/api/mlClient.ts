@@ -8,7 +8,7 @@ import { getTestConfig } from "../data/testConfigs";
 import { es } from "date-fns/locale/es";
 
 // const FLASK_API_URL = 'http://127.0.0.1:5000';
-const FLASK_API_URL = process.env.FLASK_API_URL || "http://127.0.0.1:5000";
+const FLASK_API_URL = process.env.NEXT_PUBLIC_FLASK_API_URL || "http://127.0.0.1:5000";
 
 /**
  * Maps answers from our UI format to the ML model's expected feature format

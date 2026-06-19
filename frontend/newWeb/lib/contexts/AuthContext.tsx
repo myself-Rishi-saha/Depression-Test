@@ -17,7 +17,8 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
 }
-const url=process.env.FLASK_API_URL||"http://127.0.1:5000";
+const url=process.env.NEXT_PUBLIC_FLASK_API_URL||"http://127.0.1:5000";
+console.log("[v0] Using backend URL:", url);
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
