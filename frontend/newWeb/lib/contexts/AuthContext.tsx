@@ -17,7 +17,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
 }
-
+const url=process.env.FLASK_API_URL||"http://127.0.1:5000";
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       //     password,
       //   }),
       // });
-      const response = await fetch("http://localhost:5000/auth/login", {
+      const response = await fetch(`${url}/auth/login`, {
 
         method: "POST",
         headers: {
@@ -113,7 +113,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (name: string, email: string, password: string) => {
-    const url=process.env.FLASK_API_URL||"http://127.0.1:5000";
     try {
       const response = await fetch(`${url}/auth/signup`, {
         method: "POST",
