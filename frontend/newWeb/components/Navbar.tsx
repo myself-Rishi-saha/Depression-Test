@@ -37,16 +37,16 @@ export default function Navbar() {
           <div className="flex items-center gap-2 md:hidden">
             <UserMenu />
 
-            <button
+            {/* <button
               onClick={() => setIsOpen(!isOpen)}
               className="rounded-lg p-2 hover:bg-gray-100"
             >
-              {/* {isOpen ? (
+              {isOpen ? (
                 <X className="h-5 w-5" />
               ) : (
                 <Menu className="h-5 w-5" />
-              )} */}
-            </button>
+              )}
+            </button> */}
           </div>
         </div>
 
