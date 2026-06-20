@@ -59,7 +59,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       //     password,
       //   }),
       // });
-      console.log("ENV:", process.env.NEXT_PUBLIC_FLASK_API_URL);
+      console.log({
+  env: process.env.NEXT_PUBLIC_FLASK_API_URL,
+  nodeEnv: process.env.NODE_ENV,
+});
       const response = await fetch(`${url}/auth/login`, {
 
         method: "POST",
